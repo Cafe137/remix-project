@@ -350,9 +350,9 @@ export function Workspace() {
     })
     global.modal(
       intl.formatMessage({ id: 'filePanel.workspace.createBlank' }),
-      await createModalMessage(`blank - ${counter}`, gitNotSet, (value) => { workspace = value }, (value) => gitInit = false),
+      await createModalMessage(workspace ? workspace: `blank - ${counter}`, gitNotSet, (value) => { workspace = value }, (value) => {gitInit = value === 'on'}),
       intl.formatMessage({ id: 'filePanel.ok' }),
-      () => global.dispatchCreateWorkspace(`blank - ${counter}`, 'blank', false),
+      () => global.dispatchCreateWorkspace(workspace ? workspace: `blank - ${counter}`, 'blank', null, gitInit),
       intl.formatMessage({ id: 'filePanel.cancel' })
     )
   }
@@ -1014,7 +1014,7 @@ export function Workspace() {
             <header>
               <div className="mx-2 my-2 d-flex flex-column">
                 <div className="mx-2 d-flex">
-                  {currentWorkspace !== LOCALHOST ? (
+                  { currentWorkspace !== LOCALHOST ? (
                     <span className="remixui_topmenu d-flex">
                       <Dropdown id="workspacesMenuDropdown" data-id="workspacesMenuDropdown" onToggle={() => hideIconsMenu(!showIconsMenu)} show={showIconsMenu}>
                         <Dropdown.Toggle
@@ -1157,7 +1157,7 @@ export function Workspace() {
                 <FileExplorer
                   fileState={global.fs.browser.fileState}
                   name={currentWorkspace}
-                  menuItems={['createNewFile', 'createNewFolder', selectedWorkspace && selectedWorkspace.isGist ? 'updateGist' : 'publishToGist', canUpload ? 'uploadFile' : '', canUpload ? 'uploadFolder' : '', 'importFromIpfs','importFromHttps', 'connectToLocalFileSystem', 'initializeWorkspaceAsGitRepo']}
+                  menuItems={['createNewFile', 'createNewFolder', selectedWorkspace && selectedWorkspace.isGist ? 'updateGist' : 'publishToGist', canUpload ? 'uploadFile' : '', canUpload ? 'uploadFolder' : '', 'importFromIpfs','importFromHttps', 'initializeWorkspaceAsGitRepo']}
                   contextMenuItems={global.fs.browser.contextMenu.registeredMenuItems}
                   removedContextMenuItems={global.fs.browser.contextMenu.removedMenuItems}
                   files={global.fs.browser.files}
@@ -1217,7 +1217,6 @@ export function Workspace() {
                   renamePath={editModeOn}
                   importFromIpfs={importFromUrl}
                   importFromHttps={importFromUrl}
-                  connectToLocalFileSystem={()=>switchWorkspace(LOCALHOST)}
                   canPaste={canPaste}
                   hasCopied={hasCopied}
                   setHasCopied={setHasCopied}
@@ -1339,7 +1338,7 @@ export function Workspace() {
               placement="right"
               tooltipId="branchesDropdown"
               tooltipClasses="text-nowrap"
-              tooltipText={'Current branch: ' + currentBranch || 'Branches'}
+              tooltipText={'Current branch: ' + (currentBranch && currentBranch.name) || 'Branches'}
             >
               <div className="pt-0 mr-2" data-id="workspaceGitBranchesDropdown">
                 <Dropdown style={{ height: 30, maxWidth: "6rem", minWidth: "6rem" }} onToggle={toggleBranches} show={showBranches} drop={'up'}>
